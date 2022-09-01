@@ -1,0 +1,44 @@
+SELECT wo.WORKORDERID AS "Request ID", 
+max(wo.TITLE) AS "Subject", 
+max(aau.FIRST_NAME) AS "Requester", 
+max(std.STATUSNAME) AS "Request Status", 
+longtodate(max(wo.CREATEDTIME)) AS "Created Time", 
+longtodate(max(wo.COMPLETEDTIME)) AS "Completed Time",
+max(WorkOrder_Fields.UDF_CHAR55) "LFS Financial Consultant",
+max(ServiceCatalog_Fields.GUDF_CHAR4) "Referral Status LFS",
+max(WorkOrder_Fields.UDF_CHAR63) "Qualified LFS Referral",
+max(ServiceCatalog_Fields.GUDF_CHAR10) "Outside Referee (LFS USE ONLY):",
+longtodate(max(WorkOrder_Fields.UDF_DATE6)) AS "First Kept Appointment Date",
+max(WorkOrder_Fields.UDF_CHAR85) AS "Have Brownies Been Sent?",
+max(WorkOrder_Fields.UDF_CHAR86) AS "Has Employee Received Incentive?",
+max(ServiceCatalog_Fields.GUDF_CHAR6) AS "Source of Opportunity",
+max(WorkOrder_Fields.UDF_DOUBLE3) AS "Amount of Investment Opportunity",
+max(ServiceCatalog_Fields.GUDF_DOUBLE10) AS "LFS SOF Employer Retirement Plan",
+max(ServiceCatalog_Fields.GUDF_DOUBLE11) AS "LFS SOF LCU",
+max(ServiceCatalog_Fields.GUDF_LONG1) AS "LFS SOF Other Financial Institution",
+max(ServiceCatalog_Fields.GUDF_DOUBLE12) AS "LFS SOF Other Investment Firm",
+max(ServiceCatalog_Fields.GUDF_DOUBLE13) AS "LFS SOF Insurance Policy",
+max(ServiceCatalog_Fields.GUDF_DOUBLE14) AS "LFS SOF Cash",
+max(ServiceCatalog_Fields.GUDF_DOUBLE9) AS "LFS PC Advisory",
+max(ServiceCatalog_Fields.GUDF_DOUBLE8) AS "LFS PC Insurance",
+max(ServiceCatalog_Fields.GUDF_DOUBLE7) AS "LFS PC Brokerage/Direct Business",
+max(ServiceCatalog_Fields.GUDF_DOUBLE6) AS "LFS PC Annuity",
+max(ServiceCatalog_Fields.GUDF_DOUBLE6) AS "LFS PC LCU Deposits",
+
+
+
+
+ (select max(rm.answer) from resourcesqamapping rm left join questions q on q.questionid=rm.questionid left join wo_resources wor on rm.mappingid=wor.uid where wor.woid=wo.workorderid and q.question like '%mployee Loca%') "Employee Location",
+ (select max(rm.answer) from resourcesqamapping rm left join questions q on q.questionid=rm.questionid left join wo_resources wor on rm.mappingid=wor.uid where wor.woid=wo.workorderid and q.question like '%mployee Departmen%') "Employee Department"
+
+
+ 
+FROM WorkOrder wo
+ LEFT JOIN SDUser sdu ON wo.REQUESTERID=sdu.USERID 
+LEFT JOIN AaaUser aau ON sdu.USERID=aau.USER_ID 
+LEFT JOIN WorkOrderStates wos ON wo.WORKORDERID=wos.WORKORDERID 
+LEFT JOIN StatusDefinition std ON wos.STATUSID=std.STATUSID 
+left join workorder_fields on wo.workorderid=WorkOrder_Fields.workorderid 
+left join ServiceCatalog_Fields on wo.workorderid=ServiceCatalog_Fields.workorderid  
+LEFT JOIN RequestTemplate_list reqtl ON wo.TEMPLATEID=reqtl.TEMPLATEID  
+WHERE (wo.ISPARENT='1') and reqtl.TEMPLATENAME = 'LFS - Referral Service' or reqtl.TEMPLATENAME = 'Listerhill Financial Services - Referral' group by wo.WORKORDERID
